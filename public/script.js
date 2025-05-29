@@ -1,27 +1,10 @@
-/*document.getElementById('searchForm').addEventListener('submit', async function(e) {
+document.getElementById('readMoreBtn').addEventListener('click', (e) => {
     e.preventDefault();
-    const query = document.getElementById('query').value.trim();
-    const resultsDiv = document.getElementById('results');
-    resultsDiv.innerHTML = 'Searching...';
+    const caseInfo = document.getElementById('caseInfo');
 
-    try {
-        const res = await fetch(`/search?q=${encodeURIComponent(query)}`);
-        const data = await res.json();
-        if (!data.success) {
-            resultsDiv.innerHTML = `<p>${data.error}</p>`;
-            return;
-        }
-        // Render results using a simple template
-        resultsDiv.innerHTML = data.data.map(caseItem => `
-            <div class="case-result">
-                <h3>${caseItem.title}</h3>
-                <p><strong>Date:</strong> ${caseItem.date}</p>
-                <p><strong>Citation:</strong> ${caseItem.citation}</p>
-                <p><strong>Judges:</strong> ${caseItem.judges}</p>
-                <p>${caseItem.description}</p>
-            </div>
-        `).join('');
-    } catch (err) {
-        resultsDiv.innerHTML = '<p>Error fetching results.</p>';
-    }
-});*/
+    caseInfo.style.display = 'block';
+
+    document.getElementById('close').addEventListener('click', () => {
+        caseInfo.style.display = 'none'
+    })
+})

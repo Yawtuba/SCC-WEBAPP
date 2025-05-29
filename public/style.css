@@ -43,7 +43,7 @@ body {
   padding: 15px;
   position: fixed;
   top: 0;
-  background: rgba(0,0,128,0.9);
+  background: #000080e6;
   z-index: 100;
 }
 
@@ -222,16 +222,13 @@ select, input[type="date"] {
   white-space: pre-wrap;
   margin-top: 20px;
 }
-.hero-overlay{
-    color: #000;
-}
 
 footer {
   text-align: center;
   padding: 40px 20px;
   font-weight: bold;
   color: #0a0a23;
-  margin-top: 30px;
+  margin-top: 90px;
 }
 
 .logo-footer img {

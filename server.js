@@ -4,7 +4,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3030;
 
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
@@ -63,6 +63,7 @@ app.get('/search', async (req, res) => {
             majorityOpinion: item.majority_opinionLabel?.value || 'Majority opinion unavailable',
             sourceLabel: item.sourceLabel?.value || 'Source unavailable',
             judges: item.judges?.value || 'Judges unavailable',
+            articleUrl: item.item?.value || ''
         }));
 
         // Filter results based on user query and optional filters
@@ -82,7 +83,7 @@ app.get('/search', async (req, res) => {
         res.render('results', {
             query: req.query.q,
             results: [],
-            error: 'Error retrieving data from Wikidata'
+            error: 'Please check your internet connection !'
         });
     }
 });
@@ -98,15 +99,25 @@ app.get('/case/:caseId', async (req, res) => {
         const sparqlCaseQuery = `
             SELECT DISTINCT ?item ?itemLabel ?itemDescription ?date ?legal_citation ?courtLabel ?majority_opinionLabel ?sourceLabel (GROUP_CONCAT(DISTINCT ?judge; separator=", ") AS ?judges)
             WHERE {
-                ?item wdt:P577 ?date.
-                ?item wdt:P1031 ?legal_citation.
-                ?item wdt:P5826 ?majority_opinion.
-                ?item wdt:P1433 ?source.
-                ?item wdt:P1594 [rdfs:label ?judge].
-                FILTER(LANG(?judge)="en")
-                SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
-                FILTER(STR(?item) = "http://www.wikidata.org/entity/${caseId}")
+            {
+                SELECT DISTINCT * WHERE {
+                ?item (wdt:P31/(wdt:P279*)) wd:Q114079647.
+                ?item (wdt:P17/(wdt:P279*)) wd:Q117.
+                ?item (wdt:P1001/(wdt:P279*)) wd:Q117.
+                ?item (wdt:P793/(wdt:P279*)) wd:Q7099379.
+                ?item wdt:P4884 ?court.
+                ?court wdt:P279* wd:Q1513611.
+                }
+                LIMIT 1000
             }
+            ?item wdt:P577 ?date.
+            ?item wdt:P1031 ?legal_citation.
+            ?item wdt:P5826 ?majority_opinion.
+            ?item wdt:P1433 ?source.
+            ?item wdt:P1594 [rdfs:label ?judge].
+            FILTER(LANG(?judge)="en")
+            SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],mul,en". }
+        }
             GROUP BY ?item ?itemLabel ?itemDescription ?date ?legal_citation ?courtLabel ?majority_opinionLabel ?sourceLabel
             ORDER BY ?date
         `;
@@ -130,7 +141,8 @@ app.get('/case/:caseId', async (req, res) => {
                 court: caseData.courtLabel?.value || "Court not specified",
                 majorityOpinion: caseData.majority_opinionLabel?.value || "Majority opinion unavailable",
                 sourceLabel: caseData.sourceLabel?.value || "Source unavailable",
-                judges: caseData.judges?.value || "Judges unavailable"
+                judges: caseData.judges?.value || "Judges unavailable",
+                articleUrl: `https://www.wikidata.org/wiki/${caseId}`
             }
         });
     } catch (error) {
